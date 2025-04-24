@@ -31,6 +31,17 @@ android {
     }
 
     buildTypes {
+        create("forkRelease") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            applicationIdSuffix = ".fork"
+            resValue("string", "app_name", "LibreTube Fork")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
