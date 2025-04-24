@@ -32,7 +32,7 @@ import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.obj.SelectableOption
 import com.github.libretube.ui.adapters.LegacySubscriptionAdapter
 import com.github.libretube.ui.adapters.SubscriptionChannelAdapter
-import com.github.libretube.ui.adapters.VideoCardsAdapter
+import com.github.libretube.ui.adapters.VideosAdapter
 import com.github.libretube.ui.base.DynamicLayoutManagerFragment
 import com.github.libretube.ui.extensions.addOnBottomReachedListener
 import com.github.libretube.ui.extensions.setupFragmentAnimation
@@ -60,7 +60,7 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
 
     private var isAppBarFullyExpanded = true
 
-    private var feedAdapter = VideoCardsAdapter()
+    private var feedAdapter = VideosAdapter()
     private var selectedSortOrder = PreferenceHelper.getInt(PreferenceKeys.FEED_SORT_ORDER, 0)
         set(value) {
             PreferenceHelper.putInt(PreferenceKeys.FEED_SORT_ORDER, value)
@@ -390,7 +390,7 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
             if (caughtUpIndex > 0 && !feed[caughtUpIndex - 1].isUpcoming) {
                 sortedFeed.add(
                     caughtUpIndex,
-                    StreamItem(type = VideoCardsAdapter.CAUGHT_UP_STREAM_TYPE)
+                    StreamItem(type = VideosAdapter.CAUGHT_UP_STREAM_TYPE)
                 )
             }
         }

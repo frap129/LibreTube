@@ -8,7 +8,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.ListAdapter
 import com.github.libretube.api.obj.StreamItem
 import com.github.libretube.constants.IntentData
-import com.github.libretube.databinding.AllCaughtUpRowBinding
 import com.github.libretube.databinding.TrendingRowBinding
 import com.github.libretube.extensions.dpToPx
 import com.github.libretube.extensions.toID
@@ -25,10 +24,6 @@ import com.github.libretube.util.TextUtils
 class VideoCardsAdapter(private val columnWidthDp: Float? = null) :
     ListAdapter<StreamItem, VideoCardsViewHolder>(DiffUtilItemCallback()) {
 
-    override fun getItemViewType(position: Int): Int {
-        return if (currentList[position].type == CAUGHT_UP_STREAM_TYPE) CAUGHT_UP_TYPE else NORMAL_TYPE
-    }
-
     fun removeItemById(videoId: String) {
         val index = currentList.indexOfFirst {
             it.url?.toID() == videoId
@@ -42,15 +37,8 @@ class VideoCardsAdapter(private val columnWidthDp: Float? = null) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoCardsViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        return when {
-            viewType == CAUGHT_UP_TYPE -> VideoCardsViewHolder(
-                AllCaughtUpRowBinding.inflate(layoutInflater, parent, false)
-            )
-
-            else -> VideoCardsViewHolder(
-                TrendingRowBinding.inflate(layoutInflater, parent, false)
-            )
-        }
+        val binding = TrendingRowBinding.inflate(layoutInflater, parent, false)
+        return VideoCardsViewHolder(binding)
     }
 
     @SuppressLint("SetTextI18n")
@@ -58,11 +46,11 @@ class VideoCardsAdapter(private val columnWidthDp: Float? = null) :
         val video = getItem(holder.bindingAdapterPosition)
         val videoId = video.url.orEmpty().toID()
 
-        val context = (holder.trendingRowBinding ?: holder.allCaughtUpBinding)!!.root.context
+        val context = holder.binding.root.context
         val activity = (context as BaseActivity)
         val fragmentManager = activity.supportFragmentManager
 
-        holder.trendingRowBinding?.apply {
+        holder.binding.apply {
             // set a fixed width for better visuals
             if (columnWidthDp != null) {
                 root.updateLayoutParams {
@@ -110,10 +98,4 @@ class VideoCardsAdapter(private val columnWidthDp: Float? = null) :
         }
     }
 
-    companion object {
-        private const val NORMAL_TYPE = 0
-        private const val CAUGHT_UP_TYPE = 1
-
-        const val CAUGHT_UP_STREAM_TYPE = "caught"
-    }
 }

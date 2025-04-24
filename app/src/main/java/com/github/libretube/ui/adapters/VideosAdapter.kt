@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import com.github.libretube.api.obj.StreamItem
 import com.github.libretube.constants.IntentData
+import com.github.libretube.databinding.AllCaughtUpRowBinding
 import com.github.libretube.databinding.VideoRowBinding
 import com.github.libretube.db.DatabaseHolder
 import com.github.libretube.extensions.toID
@@ -30,6 +31,10 @@ class VideosAdapter(
     private val showChannelInfo: Boolean = true
 ) : ListAdapter<StreamItem, VideosViewHolder>(DiffUtilItemCallback()) {
 
+    override fun getItemViewType(position: Int): Int {
+        return if (currentList[position].type == CAUGHT_UP_STREAM_TYPE) CAUGHT_UP_TYPE else NORMAL_TYPE
+    }
+
     fun insertItems(newItems: List<StreamItem>) {
         val updatedList = currentList.toMutableList().also {
             it.addAll(newItems)
@@ -38,10 +43,28 @@ class VideosAdapter(
         submitList(updatedList)
     }
 
+    fun removeItemById(videoId: String) {
+        val index = currentList.indexOfFirst {
+            it.url?.toID() == videoId
+        }.takeIf { it > 0 } ?: return
+        val updatedList = currentList.toMutableList().also {
+            it.removeAt(index)
+        }
+
+        submitList(updatedList)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideosViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        val binding = VideoRowBinding.inflate(layoutInflater, parent, false)
-        return VideosViewHolder(binding)
+        return when {
+            viewType == CAUGHT_UP_TYPE -> VideosViewHolder(
+                AllCaughtUpRowBinding.inflate(layoutInflater, parent, false)
+            )
+
+            else -> VideosViewHolder(
+                VideoRowBinding.inflate(layoutInflater, parent, false)
+            )
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -49,11 +72,11 @@ class VideosAdapter(
         val video = getItem(holder.bindingAdapterPosition)
         val videoId = video.url.orEmpty().toID()
 
-        val context = holder.binding.root.context
+        val context = (holder.videoRowBinding ?: holder.allCaughtUpBinding)!!.root.context
         val activity = (context as BaseActivity)
         val fragmentManager = activity.supportFragmentManager
 
-        with(holder.binding) {
+        holder.videoRowBinding?.apply {
             videoTitle.text = video.title
             videoInfo.text = TextUtils.formatViewsString(root.context, video.views ?: -1, video.uploaded)
 
@@ -98,5 +121,12 @@ class VideosAdapter(
                 }
             }
         }
+    }
+
+    companion object {
+        private const val NORMAL_TYPE = 0
+        private const val CAUGHT_UP_TYPE = 1
+
+        const val CAUGHT_UP_STREAM_TYPE = "caught"
     }
 }
